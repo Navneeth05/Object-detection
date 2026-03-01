@@ -1,59 +1,58 @@
-from flask import Flask, render_template, request, Response
+import streamlit as st
 from ultralytics import YOLO
 import cv2
-import os
+import numpy as np
+from PIL import Image
 
-app = Flask(__name__)
+st.set_page_config(page_title="YOLO Animal Detection", layout="wide")
 
-# Load trained YOLO model
-model = YOLO("runs/detect/train/weights/best.pt")
-UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+st.title("🐾 YOLO Animal Detection System")
 
-# Home Page
-@app.route("/")
-def index():
-    return render_template("index.html")
+# Load model
+@st.cache_resource
+def load_model():
+    return YOLO("best.pt")
 
-# Image Upload Detection
-@app.route("/upload", methods=["POST"])
-def upload():
-    file = request.files["image"]
+model = load_model()
 
-    if file:
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
-        file.save(filepath)
+# Sidebar options
+option = st.sidebar.selectbox(
+    "Choose Detection Mode",
+    ["Upload Image", "Live Camera"]
+)
 
-        results = model(filepath)
-        results[0].save(filename=filepath)
+# ---------------- UPLOAD IMAGE ---------------- #
+if option == "Upload Image":
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
 
-        return render_template("index.html", image=filepath)
+    if uploaded_file:
+        image = Image.open(uploaded_file)
+        image_np = np.array(image)
 
-    return "No File Uploaded"
+        results = model(image_np)
+        annotated_frame = results[0].plot()
 
+        st.image(annotated_frame, caption="Detection Result", use_container_width=True)
 
-# Live Camera Detection
-def generate_frames():
-    cap = cv2.VideoCapture(0)
+# ---------------- LIVE CAMERA ---------------- #
+elif option == "Live Camera":
+    st.info("Click Start to use webcam")
 
-    while True:
-        success, frame = cap.read()
-        if not success:
+    run = st.checkbox("Start Camera")
+
+    FRAME_WINDOW = st.image([])
+
+    camera = cv2.VideoCapture(0)
+
+    while run:
+        ret, frame = camera.read()
+        if not ret:
+            st.warning("Camera not working")
             break
-        else:
-            results = model(frame)
-            annotated_frame = results[0].plot()
 
-            ret, buffer = cv2.imencode('.jpg', annotated_frame)
-            frame = buffer.tobytes()
+        results = model(frame)
+        annotated_frame = results[0].plot()
 
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        FRAME_WINDOW.image(annotated_frame, channels="BGR")
 
-@app.route("/video")
-def video():
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    camera.release()
