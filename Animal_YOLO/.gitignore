@@ -1,0 +1,21 @@
+# Virtual Environment
+yoloenv/
+
+# YOLO training results
+runs/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dataset (large files - optional)
+train/
+valid/
+test/
+
+# Uploads
+static/uploads/

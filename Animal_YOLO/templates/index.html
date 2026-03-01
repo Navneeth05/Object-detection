@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Animal Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🐾 YOLO Animal Detection System</h1>
+
+    <div class="card">
+
+        <h2>📤 Upload Image</h2>
+
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="image" class="file-input">
+            <button type="submit" class="btn">Detect</button>
+        </form>
+
+        {% if image %}
+            <div class="result">
+                <h3>Detection Result</h3>
+                <img src="{{ image }}" class="result-img">
+            </div>
+        {% endif %}
+
+    </div>
+
+    <div class="card">
+        <h2>🎥 Live Camera Detection</h2>
+        <img src="{{ url_for('video') }}" class="video-feed">
+    </div>
+
+</div>
+
+</body>
+</html>
