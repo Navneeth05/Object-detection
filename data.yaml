@@ -1,0 +1,22 @@
+path: C:/Users/navne_rzu7d/Desktop/SKILL_LAB_PROJECT/Animal_YOLO
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 13
+
+names:
+  0: Boar
+  1: Buffalo
+  2: Cat
+  3: Chicken
+  4: Cow
+  5: Deer
+  6: Dog
+  7: Elephant
+  8: Goat
+  9: Monkey
+  10: Rhino
+  11: Snake
+  12: Tiger
